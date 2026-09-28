@@ -13,6 +13,7 @@ export default defineConfig({
       $libs: fileURLToPath(new URL("./src/libs", import.meta.url)),
       $components: fileURLToPath(new URL("./src/components", import.meta.url)),
       $assets: fileURLToPath(new URL("./src/assets", import.meta.url)),
+      $routes: fileURLToPath(new URL("./src/routes", import.meta.url)),
     },
   },
 });

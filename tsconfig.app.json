@@ -22,7 +22,9 @@
       "$components": ["./src/components"],
       "$components/*": ["./src/components/*"],
       "$assets": ["./src/assets"],
-      "$assets/*": ["./src/assets/*"]
+      "$assets/*": ["./src/assets/*"],
+      "$routes": ["./src/routes"],
+      "$routes/*": ["./src/routes/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
