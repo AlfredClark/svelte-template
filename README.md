@@ -1,7 +1,7 @@
 # Svelte + TS + Vite
 
-Opinionated starter for Svelte 5 + TypeScript + Vite, with code quality,
-commit conventions and path aliases preconfigured.
+Opinionated starter for Svelte 5 + TypeScript + Vite, with hash routing,
+code quality, commit conventions and path aliases preconfigured.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ pnpm dev
 | `pnpm build`        | Production build to `dist/` (relative `base`, portable)    |
 | `pnpm preview`      | Serve `dist/` locally (open this, never `dist/index.html`) |
 | `pnpm check`        | `svelte-check` + `tsc` type checking                       |
-| `pnpm lint`         | ESLint (flat config, Svelte + TS)                          |
+| `pnpm lint`         | ESLint 10 (flat config, Svelte + TS)                       |
 | `pnpm lint:fix`     | ESLint with autofix                                        |
 | `pnpm format`       | Prettier write (semi, double quotes, width 100)            |
 | `pnpm format:check` | Prettier check                                             |
@@ -34,11 +34,12 @@ CI runs `format:check`, `lint`, `check` and `build` on every push / PR.
 ```
 src/
   main.ts            # entry, mounts App
-  App.svelte
+  App.svelte         # nav shell + <Router>
   app.css
   assets/            # bundled static assets (import via $assets)
   components/        # reusable UI components (import via $components)
   libs/              # shared logic / stores (import via $libs)
+  routes/            # pages (import via $routes): Home, About, NotFound
 ```
 
 ## Path aliases
@@ -48,9 +49,32 @@ src/
 | `$libs/*`       | `src/libs/*`       | `vite.config.ts` + `tsconfig.app.json` |
 | `$components/*` | `src/components/*` | `vite.config.ts` + `tsconfig.app.json` |
 | `$assets/*`     | `src/assets/*`     | `vite.config.ts` + `tsconfig.app.json` |
+| `$routes/*`     | `src/routes/*`     | `vite.config.ts` + `tsconfig.app.json` |
 
 Vite resolves them at build time, TS paths cover `svelte-check`, the IDE
 and ESLint (`projectService`). No extra ESLint config needed.
+
+## Routing
+
+Hash routing via [`svelte-spa-router@v5`](https://github.com/ItalyPaleAle/svelte-spa-router)
+(Svelte 5 runes compatible), defined in `src/App.svelte`:
+
+| Route     | Component                                 |
+| --------- | ----------------------------------------- |
+| `#/`      | `$routes/Home.svelte`                     |
+| `#/about` | `$routes/About.svelte`                    |
+| `#/*`     | `$routes/NotFound.svelte` (catch-all 404) |
+
+To add a page: create `src/routes/Foo.svelte`, register `"/foo": Foo` in the
+`routes` object. Use `use:link` on internal anchors for no-refresh navigation:
+
+```svelte
+<a href="#/foo" use:link>Foo</a>
+```
+
+Hash mode is deliberate: it needs zero server configuration and stays
+compatible with the portable relative-`base` `dist/`. Switch to history mode
+only if you can guarantee a server fallback to `index.html`.
 
 ## Commit conventions
 
@@ -83,7 +107,8 @@ VS Code + extensions (auto-prompted via `.vscode/extensions.json`):
 
 Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also
 powered by Vite. This template is intentionally SvelteKit-free: a plain Vite
-SPA without file-based routing, structured similarly so migration stays easy.
+SPA with hash routing (no server-side file-based routing), structured
+similarly so migration stays easy.
 
 ## Technical notes
 
