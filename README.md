@@ -34,12 +34,12 @@ CI runs `format:check`, `lint`, `check` and `build` on every push / PR.
 ```
 src/
   main.ts            # entry, mounts App
-  App.svelte         # nav shell + <Router>
+  app.svelte         # nav shell + <Router>
   app.css
   assets/            # bundled static assets (import via $assets)
   components/        # reusable UI components (import via $components)
   libs/              # shared logic / stores (import via $libs)
-  routes/            # pages (import via $routes): Home, About, NotFound
+  routes/            # pages (import via $routes): home, about, not-found
 ```
 
 ## Path aliases
@@ -57,15 +57,15 @@ and ESLint (`projectService`). No extra ESLint config needed.
 ## Routing
 
 Hash routing via [`svelte-spa-router@v5`](https://github.com/ItalyPaleAle/svelte-spa-router)
-(Svelte 5 runes compatible), defined in `src/App.svelte`:
+(Svelte 5 runes compatible), defined in `src/app.svelte`:
 
-| Route     | Component                                 |
-| --------- | ----------------------------------------- |
-| `#/`      | `$routes/Home.svelte`                     |
-| `#/about` | `$routes/About.svelte`                    |
-| `#/*`     | `$routes/NotFound.svelte` (catch-all 404) |
+| Route     | Component                                  |
+| --------- | ------------------------------------------ |
+| `#/`      | `$routes/home.svelte`                      |
+| `#/about` | `$routes/about.svelte`                     |
+| `#/*`     | `$routes/not-found.svelte` (catch-all 404) |
 
-To add a page: create `src/routes/Foo.svelte`, register `"/foo": Foo` in the
+To add a page: create `src/routes/foo.svelte`, register `"/foo": Foo` in the
 `routes` object. Use `use:link` on internal anchors for no-refresh navigation:
 
 ```svelte

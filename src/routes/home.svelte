@@ -2,7 +2,7 @@
   import svelteLogo from "$assets/svelte.svg";
   import viteLogo from "$assets/vite.svg";
   import heroImg from "$assets/hero.png";
-  import Counter from "$components/Counter.svelte";
+  import Counter from "$components/counter.svelte";
 
   // 跟随 vite `base`，避免硬编码 /icons.svg 在子路径部署或 file 协议下 404
   const iconsUrl = `${import.meta.env.BASE_URL}icons.svg`;
@@ -16,7 +16,7 @@
   </div>
   <div>
     <h1>Get started</h1>
-    <p>Edit <code>src/routes/Home.svelte</code> and save to test <code>HMR</code></p>
+    <p>Edit <code>src/routes/home.svelte</code> and save to test <code>HMR</code></p>
   </div>
   <Counter />
 </section>
