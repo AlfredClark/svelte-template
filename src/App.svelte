@@ -1,8 +1,8 @@
 <script>
-  import svelteLogo from "./assets/svelte.svg";
-  import viteLogo from "./assets/vite.svg";
-  import heroImg from "./assets/hero.png";
-  import Counter from "./lib/Counter.svelte";
+  import svelteLogo from "$assets/svelte.svg";
+  import viteLogo from "$assets/vite.svg";
+  import heroImg from "$assets/hero.png";
+  import Counter from "$components/Counter.svelte";
 
   // 跟随 vite `base`，避免硬编码 /icons.svg 在子路径部署或 file 协议下 404
   const iconsUrl = `${import.meta.env.BASE_URL}icons.svg`;

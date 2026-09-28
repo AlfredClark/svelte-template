@@ -15,7 +15,15 @@
      */
     "allowJs": true,
     "checkJs": true,
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+    "paths": {
+      "$libs": ["./src/libs"],
+      "$libs/*": ["./src/libs/*"],
+      "$components": ["./src/components"],
+      "$components/*": ["./src/components/*"],
+      "$assets": ["./src/assets"],
+      "$assets/*": ["./src/assets/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }
