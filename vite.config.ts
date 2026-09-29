@@ -1,19 +1,9 @@
-import { fileURLToPath, URL } from "node:url";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { sveltekit } from "@sveltejs/kit/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
-// https://vite.dev/config/
+// SvelteKit 接管构建与别名（$lib 默认指向 src/lib），
+// 静态适配器与相对路径配置见 svelte.config.ts
 export default defineConfig({
-  // 使用相对路径，保证 dist/ 可部署到任意子路径，
-  // 且 index.html 内资源引用为 ./assets/... 而非 /assets/...
-  base: "./",
-  plugins: [svelte()],
-  resolve: {
-    alias: {
-      $libs: fileURLToPath(new URL("./src/libs", import.meta.url)),
-      $components: fileURLToPath(new URL("./src/components", import.meta.url)),
-      $assets: fileURLToPath(new URL("./src/assets", import.meta.url)),
-      $routes: fileURLToPath(new URL("./src/routes", import.meta.url)),
-    },
-  },
+  plugins: [tailwindcss(), sveltekit()],
 });

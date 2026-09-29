@@ -12,46 +12,39 @@
    - 代码注释优先英文，复杂业务逻辑可用中英双语，但不得只写晦涩缩写；
    - commit message 必须遵循 Conventional Commits 英文格式（见 §8），但向用户汇报时要用中文解释做了什么。
 3. **面向用户的输出风格**：简洁、直接、客观，只陈述事实与结论，不做多余寒暄，不使用 emoji（用户明确要求除外）。
-4. **引用代码时给出路径与行号**，格式为 `file_path:line_number`，例如 `src/app.svelte:7`。
+4. **引用代码时给出路径与行号**，格式为 `file_path:line_number`，例如 `src/routes/+page.svelte:1`。
 5. **不确定时先用中文提问再动手**：需求模糊、技术选型有多种可行方案、可能破坏现有行为时，必须先提问，不得擅自假设。
 
 ## 1. 项目概览
 
-- **定位**：无 SvelteKit 的通用 Svelte SPA 模板，Hash 路由、开箱即用的质量门禁与路径别名；新项目以此为起点派生（见 §11）。
-- **技术栈**：Svelte 5 + Vite 8 + TypeScript（`~6.0`）+ svelte-spa-router，包管理 `pnpm@11.25.0`，Node `>=24`。
-- **构建产物**：`vite build` 输出到 `dist/`，`vite.config.ts` 中 `base: "./"` 为相对路径，保证可部署到任意子路径——**不要改成 `/`**。
-- **当前状态**：模板自带最小演示（非空项目）：`src/routes/home.svelte` 为 Vite 落地页（含文档链接 + `Counter` 示例）、`src/routes/about.svelte` 为 Hash 路由演示、`src/routes/not-found.svelte` 为兜底页、`src/components/counter.svelte` 为 Runes 示例、`src/assets/` 含 `hero.png` / `svelte.svg` / `vite.svg`，`src/libs/` 仅 `.gitkeep` 预留。动画库 GSAP 当前未引入，后续按需添加。
+- **定位**：基于 SvelteKit 的通用 Svelte 模板，全局预渲染、开箱即用的质量门禁与 `$lib` 别名；新项目以此为起点派生（见 §11）。
+- **技术栈**：Svelte 5 + SvelteKit 2 + Vite 8 + TypeScript（`~6.0`）+ `@sveltejs/adapter-static`，包管理 `pnpm@11.25.0`，Node `>=24`。
+- **构建产物**：`vite build` 输出到 `build/`（含 `404.html` fallback），`svelte.config.ts` 中 `paths.relative: true` 保证可部署到任意子路径——**不要改成绝对路径**。
+- **当前状态**：模板自带最小演示：`src/routes/+page.svelte` 为纯文本落地页、`src/routes/about/+page.svelte` 为路由演示、`src/routes/+error.svelte` 为兜底页。动画库 GSAP 当前未引入，后续按需添加。
 
 ## 2. 目录结构与路径别名
 
 ```text
 src/
-  main.ts            # 入口，仅做 mount，不得塞业务逻辑
-  app.svelte         # 仅承载 Router，不得塞业务逻辑
-  app.css            # 全局样式（模板落地页样式，可裁剪不可全删见 §11）
-  routes/            # 页面级组件，路由在此注册
-    home.svelte      # 模板示例：Vite 落地页，可删改
-    about.svelte     # 模板示例：Hash 路由演示，可删
-    not-found.svelte # 兜底页模式，建议保留
-  components/        # 可复用 UI 组件
-    counter.svelte   # 模板示例：Runes 计数器，可删
-  libs/              # 纯逻辑：工具函数、store、动画封装、请求等（当前仅 .gitkeep）
-  assets/            # 静态资源（hero.png / svelte.svg / vite.svg 为模板示例）
+  app.html             # HTML 壳（含 %sveltekit.head% / %sveltekit.body%），不得塞业务逻辑
+  app.css              # 全局样式（仅 Tailwind 引入 + 全局基线，见 §11）
+  routes/              # SvelteKit 文件路由（+layout/+page/+error）
+    +layout.svelte     # 仅承载导航与 <slot/>（{@render children}），不得塞业务逻辑
+    +layout.ts         # export const prerender = true，全局预渲染开关
+    +page.svelte       # 模板示例：纯文本落地页，可删改
+    about/+page.svelte # 模板示例：路由演示，可删
+    +error.svelte      # 兜底页模式，建议保留
+  lib/                 # $lib 默认指向：可复用 UI + 纯逻辑 + 打包型资源（按需创建）
+static/                # 直拷静态资源（favicon.svg / icons.svg 为模板示例）
 ```
 
-路径别名（`vite.config.ts` + `tsconfig.app.json` 已对齐，新增别名必须两处同步）：
-
-| 别名          | 指向             |
-| ------------- | ---------------- |
-| `$routes`     | `src/routes`     |
-| `$components` | `src/components` |
-| `$libs`       | `src/libs`       |
-| `$assets`     | `src/assets`     |
+路径别名：统一使用 SvelteKit 默认 `$lib` → `src/lib`（`svelte.config.ts` + `.svelte-kit/tsconfig.json` 自动对齐），已弃用旧 `$routes/$components/$libs/$assets` 四别名，不得新增自定义别名替代 `$lib`。
 
 规则：
 
-- 跨目录引用优先使用别名，禁止 `../../../` 式长相对路径。
-- 页面编排放在 `$routes`，可复用块下沉到 `$components`，无 UI 的纯逻辑下沉到 `$libs`。
+- 跨目录引用优先使用 `$lib`，禁止 `../../../` 式长相对路径。
+- 页面编排放在 `src/routes`，可复用块下沉到 `$lib/components`，无 UI 的纯逻辑下沉到 `$lib` 下对应模块（如 `utils/`、`stores/`）。
+- 静态直拷资源放 `static/` 并经 `$app/paths` 的 `base` 引用；需参与打包哈希的资源才放 `src/lib/assets` 并 `import` 引用。
 - 新增顶层目录前先用中文向用户说明理由。
 
 ## 3. 常用命令（pnpm）
@@ -85,10 +78,11 @@ pnpm format:check && pnpm lint && pnpm check && pnpm build
 ## 4. 代码风格
 
 - 遵循 `.editorconfig`：LF 换行、UTF-8、2 空格缩进、行尾无多余空格、文件末尾空行。
-- Prettier（`prettier.config.ts`）：分号 `semi: true`、双引号、行宽 100、Svelte 文件用 `prettier-plugin-svelte` 解析。**不要与 prettier 冲突**（ESLint 已接入 `eslint-config-prettier`）。
+- Prettier（`prettier.config.ts`）：分号 `semi: true`、双引号、行宽 100、Svelte 文件用 `prettier-plugin-svelte` 解析，`prettier-plugin-tailwindcss` 负责 class 排序且必须放最后。**不要与 prettier 冲突**（ESLint 已接入 `eslint-config-prettier`）。
 - ESLint（`eslint.config.ts`）：`@eslint/js` + `typescript-eslint` + `eslint-plugin-svelte` 的 recommended，不得新增全局 `eslint-disable` 压制问题；确需压制时必须写中文/英文理由注释并限定单行。
-- 命名：文件 `kebab-case.svelte`（组件/路由，如 `not-found.svelte`）、`camelCase.ts`（libs 工具）；变量/函数 `camelCase`，类型/类 `PascalCase`，常量 `UPPER_SNAKE_CASE`；CSS 类名 `kebab-case`。组件导入后的变量名保持 `PascalCase`（如 `import Home from "$routes/home.svelte"`）。
+- 命名：文件 `kebab-case.svelte`（`$lib` 下组件，如 `button.svelte`）、SvelteKit 路由文件固定为 `+page.svelte` / `+layout.svelte` / `+error.svelte`、`camelCase.ts`（lib 工具）；变量/函数 `camelCase`，类型/类 `PascalCase`，常量 `UPPER_SNAKE_CASE`；CSS 类名 `kebab-case`。组件导入后的变量名保持 `PascalCase`（如 `import Button from "$lib/components/button.svelte"`）。
 - 样式：组件私有样式写在 `<style>` 内；跨组件复用才放 `app.css`。避免全局选择器污染。
+- Tailwind CSS v4：经 `@tailwindcss/vite` 接入，`src/app.css` 首行 `@import "tailwindcss"`；新 UI 优先用 utilities，`app.css` 只收全局基线与设计 tokens，不新增组件专属手写 CSS。暗色用 `dark:` 变体（默认 media 跟随系统，与现有 `prefers-color-scheme` 一致）。引用设计 token 时用任意值（如 `border-[var(--border)]`）。
 
 ## 5. Svelte 5 规范
 
@@ -96,20 +90,21 @@ pnpm format:check && pnpm lint && pnpm check && pnpm build
 2. 组件结构顺序：`<script lang="ts">` → 模板 → `<style>`；`lang="ts"` 不可省略。
 3. `$effect` 仅用于副作用（动画、订阅、DOM 操作），禁止在 `$effect` 内直接派生状态（用 `$derived` 代替）。
 4. 动画相关副作用（如后续引入 GSAP）必须在 `$effect` 内初始化并返回清理函数（如 `ctx.revert()` / `ScrollTrigger.kill()`），防止路由切换泄漏。
-5. 组件 props 用 `$props()` + TypeScript interface 显式声明类型；事件回调以 `onXxx` 回调 prop 传递（Svelte 5 风格，如 `onclick={handler}`，见 `src/components/counter.svelte:8`），不要使用 Svelte 4 的 `on:click` 指令写法。
+5. 组件 props 用 `$props()` + TypeScript interface 显式声明类型；事件回调以 `onXxx` 回调 prop 传递（Svelte 5 风格，如 `onclick={handler}`），不要使用 Svelte 4 的 `on:click` 指令写法。
 
 ## 6. TypeScript 规范
 
 - `strict` 生效（继承 `@tsconfig/svelte`）：禁止 `any` 透传，必要时用 `unknown` + 类型收窄；禁止隐式 `undefined` 解构而不处理。
 - `.svelte` / `.js` 默认开启 `checkJs`（见 `tsconfig.app.json`），写 JS 也要保证类型检查通过。
-- 公共函数必须显式标注入参与返回值类型；`$libs` 内纯函数优先、可单元测试、无副作用。
+- 公共函数必须显式标注入参与返回值类型；`$lib` 内纯函数优先、可单元测试、无副作用。
 - Node 侧配置（`vite.config.ts`、`svelte.config.ts` 等）由 `tsconfig.node.json` 检查，修改后必须跑 `pnpm check`。
+- 根 `tsconfig.json` 的 `disableSourceOfProjectReferenceRedirect` 不得删除：防止 eslint 解析 `.svelte` 文件时触发 TS project-reference 重定向自循环（栈溢出），详见该文件注释。
 
-## 7. 路由规范（svelte-spa-router）
+## 7. 路由规范（SvelteKit 文件路由）
 
-- 路由表集中定义在 `src/app.svelte:7`，新增页面时同步注册，通配符 `*` 指向兜底页。
-- 页面组件只放在 `src/routes/`，文件名与路由语义对应（如 `home.svelte`）。
-- 路由组件懒加载优先：`import()` 动态导入，减少首屏包体积（首页除外）。现状三页为静态 `import` 演示，新页面按此执行，无需重构现有演示页。
+- 路由表集中定义在 `src/routes` 文件系统，新增页面即新增 `+page.svelte`，`+error.svelte` 为全局兜底页。
+- 页面组件只放在 `src/routes/`，文件名与路由语义对应（如 `about/+page.svelte` 对应 `/about`）。
+- 路由组件懒加载优先：`import()` 动态导入，减少首屏包体积（首页除外）。
 
 ## 8. Git 与提交规范
 
@@ -130,9 +125,9 @@ pnpm format:check && pnpm lint && pnpm check && pnpm build
 ## 10. 禁止事项
 
 - ❌ 与用户用英文/混杂语言长篇交流（代码标识符和 commit message 除外）。
-- ❌ 修改 `base: "./"` 为绝对路径；不同步改 `vite.config.ts` 与 `tsconfig.app.json` 中的别名。
+- ❌ 修改 `paths.relative` 为绝对路径；
 - ❌ 引入新依赖不说明理由；引入后不同步 `pnpm-lock.yaml`。
-- ❌ 提交 `dist/`、`node_modules/`、本地密钥或 `.env`（注意：模板 `.gitignore` 当前仅忽略 `*.local`，新项目如需 `.env*` 自行补充，见 §11）。
+- ❌ 提交 `build/`、`node_modules/`、本地密钥或 `.env`（注意：模板 `.gitignore` 当前仅忽略 `*.local`，新项目如需 `.env*` 自行补充，见 §11）。
 - ❌ 为过检查而滥用 `eslint-disable` / `// @ts-ignore` / 关闭 CI 校验。
 
 ## 11. 以模板创建新项目时的初始化规范
@@ -146,13 +141,13 @@ pnpm format:check && pnpm lint && pnpm check && pnpm build
    - git 历史：保留模板历史还是 `rm -rf .git && git init` 重建，由用户选。
 2. **必改元信息**：
    - `package.json`：`name`、`description`、`version`（模板保持 `0.0.0`，新项目建议 `0.1.0`）、`private` 去留、`packageManager` 保持 `pnpm@11.25.0`；
-   - `index.html`：`<html lang>` 与 `<title>` 跟新项目名对齐；
+   - `src/app.html`：`<html lang>` 与 `<title>` 跟新项目名对齐；
    - `README.md`：替换标题与简介，删除仅描述模板的段落；
    - `CHANGELOG.md`：若从模板带过来则删除，由新项目 `pnpm changelog` 重新生成。
 3. **示例清理分级**：
-   - 可删：`src/routes/home.svelte` 落地页内容、`src/routes/about.svelte`、`src/components/counter.svelte`、`src/assets/hero.png` / `svelte.svg` / `vite.svg`；
-   - 保留为模式：`src/routes/not-found.svelte` + `src/app.svelte` 的 `*` 兜底路由；
+   - 可删：`src/routes/+page.svelte` 落地页内容、`src/routes/about/+page.svelte`、`static/` 示例资源；
+   - 保留为模式：`src/routes/+error.svelte` 兜底页；
    - `src/app.css` 模板落地页样式可裁剪，不可整文件删除导致布局裸奔；
-   - 删页面后同步改 `src/app.svelte:7` 路由表，删除无用 `import`。
-4. **不可动**：`vite.config.ts` 的 `base: "./"`、四别名在 `vite.config.ts` 与 `tsconfig.app.json` 两处同步、Husky 三钩子与 CI 四步（`format:check` → `lint` → `check` → `build`）。
+   - 删页面后删除无用 `import`。
+4. **不可动**：`svelte.config.ts` 的 `paths.relative: true` 与 `adapter-static` 全局预渲染、Husky 三钩子与 CI 四步（`format:check` → `lint` → `check` → `build`）。
 5. **收尾验证**：`pnpm install` 同步 `pnpm-lock.yaml` 后跑 `pnpm format:check && pnpm lint && pnpm check && pnpm build`；新项目如需忽略 `.env*` 自行补 `.gitignore`；仍遵守 §8，不得擅自 `commit / push`。

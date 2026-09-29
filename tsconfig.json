@@ -1,4 +1,13 @@
 {
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    // solution-style 根工程（含 references）会被 eslint projectService 选中解析 .svelte 文件；
+    // TS 会为被引用工程的 .svelte 源建输出→源重定向并自循环，导致解析栈溢出。
+    // 本模板无 composite 构建，此开关仅关闭该重定向逻辑，不影响类型检查语义。
+    // Disable source-of-project-reference redirect: the solution-style root program
+    // crashes ESLint parsing on .svelte files via a self-referencing redirect loop.
+    "disableSourceOfProjectReferenceRedirect": true
+  },
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
 }
